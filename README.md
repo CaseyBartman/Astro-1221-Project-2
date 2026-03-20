@@ -1,6 +1,7 @@
 # Astro-1221-Project-2
 
 Architecture:
+ - The following classes will all be levereged by the main.py file as our main top-down workflow! The goal of using this lead class was to develop incrementally so each class can work on its own and be tested in isolation! 
 Classes:
 1) MessierDataIngester class 
 - Data Structures: 
@@ -10,9 +11,8 @@ Classes:
   - fetch_and_save() Leverage "requests" library to download the messier catalog to save catalog to local .csv file 
   - parse_messier_objects_to_dict() read CSV and return the list of dictionaries to be used by the analytics engine class
 
-
 2) AstroAnalyticsEngine class (the pandas implementation class)
-- DataStructures: 
+- Data Structures: 
   - df (Pandas DataFrame) of the main table containing all 110+ objects
 - Goal: 
   - Convert list into a self.df
@@ -22,7 +22,7 @@ Classes:
   - ger_seaonal_targets(season name): - using filtering, returns objects visible in the current sky
 
 3) UserProfile
-- DataStructures: 
+- Data Structures: 
   - preferences dict. to store settings for user {"aperture": 114, "location": "Columbus", "level": "Beginner" ...} 
   - Favorites list to contain IDs of objects the user wants to see later
 - Goal: 
@@ -52,4 +52,4 @@ Classes:
  - Add AI usage to readme 
  - Provide script or command to run or function that shows every markdown comment (//) and prints them using regex into a txt file for grading purposes 
  - Requirements.txt file
- - Dependencies and usagee/installation guide and everything. 
+ - Dependencies and usagee/installation guide and everything.
