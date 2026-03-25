@@ -25,3 +25,4 @@ work-tmp/
 # IDE/OS specific ignores
 .idea/
 .vscode/
+user_config.json
