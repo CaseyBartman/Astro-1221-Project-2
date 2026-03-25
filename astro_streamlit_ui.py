@@ -1172,113 +1172,124 @@ def chat_interface():
         )
  
  
+
 # ──────────────────────────────────────────────
-# Main App Layout
+# AstroStreamlitUI Class and Entrypoint
 # ──────────────────────────────────────────────
- 
-def main():
-    st.set_page_config(
-        page_title="Messier Object Tourist Guide",
-        page_icon="🔭",
-        layout="wide",
-    )
- 
-    st.title("Messier Object Tourist Guide")
-    st.caption("Your personalized deep-sky observing companion")
- 
-    with st.expander("Setting up your profile"):
-        st.markdown(
-            "This step is not super important, but if you want a more personalized "
-            "star map, you can change your name, telescope aperture, experience level, "
-            "and preferred season! If you do not have a telescope, these steps are not "
-            "necessary to run this guide."
+
+class AstroStreamlitUI:
+    """
+    Streamlit UI wrapper for the Messier Object Tourist Guide app.
+    Call run() to launch the UI in a Streamlit context.
+    """
+    def __init__(self):
+        pass
+
+    def run(self):
+        st.set_page_config(
+            page_title="Messier Object Tourist Guide",
+            page_icon="🔭",
+            layout="wide",
         )
- 
-    # Load data and profile
-    analytics = load_messier_data()
-    profile = get_user_profile()
- 
-    # Render sidebar (pass analytics for metrics)
-    profile = render_sidebar(profile, analytics)
- 
-    # Main content tabs
-    tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
-        "Sky Chart",
-        "Finder Chart",
-        "Object Details",
-        "Catalog Explorer",
-        "Observing Tour",
-        "Observation Log",
-        "Observing Assistant",
-    ])
- 
-    with tab1:
-        with st.expander("About this tab"):
+
+        st.title("Messier Object Tourist Guide")
+        st.caption("Your personalized deep-sky observing companion")
+
+        with st.expander("Setting up your profile"):
             st.markdown(
-                "You can play around with this circular plot of the Messier objects. "
-                "Depending on your preferred season, you can choose to show only the "
-                "objects for that season. Depending on your telescope, you will see "
-                "which objects are visible. Last but not least! You can choose to view "
-                "the plot by object type or viewing difficulty. The position will not "
-                "change; only the key describing the points will."
+                "This step is not super important, but if you want a more personalized "
+                "star map, you can change your name, telescope aperture, experience level, "
+                "and preferred season! If you do not have a telescope, these steps are not "
+                "necessary to run this guide."
             )
-        display_polar_chart(analytics, profile)
- 
-    with tab2:
-        with st.expander("About this tab"):
-            st.markdown(
-                "Instead of a circular plot, this is a more traditional viewing of the "
-                "objects by their Right Ascension and their magnitude. The Finder Chart "
-                "is better at visualizing the magnitudes vs the RA values at a glance."
-            )
-        display_scatter_chart(analytics, profile)
- 
-    with tab3:
-        with st.expander("About this tab"):
-            st.markdown(
-                "You may select any object of your choosing to find info about its "
-                "magnitude, best month for viewing from your specified location, and "
-                "apparent angular size! There are a few extra notes outlining the "
-                "position in the sky and other tools."
-            )
-        col1, col2 = st.columns([1, 1])
-        with col1:
-            display_object_details(analytics, profile)
-        with col2:
-            display_favorites(analytics, profile)
- 
-    with tab4:
-        with st.expander("About this tab"):
-            st.markdown(
-                "The Catalog is a full table of all 110 objects, if combing through "
-                "1 by 1 is too much. You can filter this table by its type, max "
-                "magnitude, and season. The table shows a few facts about objects "
-                "similar to those in the Object Details section."
-            )
-        display_object_table(analytics, profile)
- 
-    with tab5:
-        with st.expander("About this tab"):
-            st.markdown(
-                "You have access to a custom observing plan for that night based on "
-                "the sidebar settings in your profile. Beginners have 8 objects, while "
-                "advanced observers have 16, with harder targets to find."
-            )
-        display_observing_tour(analytics, profile)
- 
-    with tab6:
-        with st.expander("About this tab"):
-            st.markdown(
-                "Similar to the Observing Tour, you can track objects that you want "
-                "to observe. However, the structure of the Tour is not there. It is "
-                "a marathon tracker; you add your observations and any notes on the "
-                "objects until you have all 110."
-            )
-        display_observation_log(analytics, profile)
- 
-    with tab7:
-        chat_interface()
- 
- 
-if __name__ == "__main__":
-    main()
+
+        # Load data and profile
+        analytics = load_messier_data()
+        profile = get_user_profile()
+
+        # Render sidebar (pass analytics for metrics)
+        profile = render_sidebar(profile, analytics)
+
+        # Main content tabs
+        tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
+            "Sky Chart",
+            "Finder Chart",
+            "Object Details",
+            "Catalog Explorer",
+            "Observing Tour",
+            "Observation Log",
+            "Observing Assistant",
+        ])
+
+        with tab1:
+            with st.expander("About this tab"):
+                st.markdown(
+                    "You can play around with this circular plot of the Messier objects. "
+                    "Depending on your preferred season, you can choose to show only the "
+                    "objects for that season. Depending on your telescope, you will see "
+                    "which objects are visible. Last but not least! You can choose to view "
+                    "the plot by object type or viewing difficulty. The position will not "
+                    "change; only the key describing the points will."
+                )
+            display_polar_chart(analytics, profile)
+
+        with tab2:
+            with st.expander("About this tab"):
+                st.markdown(
+                    "Instead of a circular plot, this is a more traditional viewing of the "
+                    "objects by their Right Ascension and their magnitude. The Finder Chart "
+                    "is better at visualizing the magnitudes vs the RA values at a glance."
+                )
+            display_scatter_chart(analytics, profile)
+
+        with tab3:
+            with st.expander("About this tab"):
+                st.markdown(
+                    "You may select any object of your choosing to find info about its "
+                    "magnitude, best month for viewing from your specified location, and "
+                    "apparent angular size! There are a few extra notes outlining the "
+                    "position in the sky and other tools."
+                )
+            col1, col2 = st.columns([1, 1])
+            with col1:
+                display_object_details(analytics, profile)
+            with col2:
+                display_favorites(analytics, profile)
+
+        with tab4:
+            with st.expander("About this tab"):
+                st.markdown(
+                    "The Catalog is a full table of all 110 objects, if combing through "
+                    "1 by 1 is too much. You can filter this table by its type, max "
+                    "magnitude, and season. The table shows a few facts about objects "
+                    "similar to those in the Object Details section."
+                )
+            display_object_table(analytics, profile)
+
+        with tab5:
+            with st.expander("About this tab"):
+                st.markdown(
+                    "You have access to a custom observing plan for that night based on "
+                    "the sidebar settings in your profile. Beginners have 8 objects, while "
+                    "advanced observers have 16, with harder targets to find."
+                )
+            display_observing_tour(analytics, profile)
+
+        with tab6:
+            with st.expander("About this tab"):
+                st.markdown(
+                    "Similar to the Observing Tour, you can track objects that you want "
+                    "to observe. However, the structure of the Tour is not there. It is "
+                    "a marathon tracker; you add your observations and any notes on the "
+                    "objects until you have all 110."
+                )
+            display_observation_log(analytics, profile)
+
+        with tab7:
+            chat_interface()
+
+
+# Entrypoint function for main.py
+def run_streamlit_ui():
+    ui = AstroStreamlitUI()
+    ui.run()

@@ -41,7 +41,7 @@ MAG_LOG_COEFFICIENT = 5
 
 # How much brighter than viewing tool limit -> Grabbed from this source:  http://www.icq.eps.harvard.edu/MagScale.html 
 # IT IS IMPORTANT TO NOTE THAT THE MAX MAGNITUDE OF ANY MESSIER OBJECT IS LESS THAN 13. So, this "telescope by aperture" 
-# requirement doesn't apply as well as listing the tools that wee could use, since a telescope could give views for each of the objects. This is a bit more dynamic.
+# requirement doesn't apply as well as listing the tools that we could use, since a telescope could give views for each of the objects. This is a bit more dynamic.
 NAKED_EYE_BRIGHT_URBAN_VISIBILITY_THRESHOLD = 3.0
 NAKED_EYE_SUBURBAN_RURAL_DARK_VISIBILITY_THRESHOLD = 5.0
 BINOCULAR_VISIBILITY_THRESHOLD = 8.5

@@ -2,16 +2,22 @@
 Entry point for the Messier Object Tourist Guide app.
 """
 
+
 from messier_data_ingester import MessierDataIngester
 from constants import CSV_FILENAME, LOG_FILENAME, DEFAULT_APERTURE_MM, DEFAULT_APERTURE_LOG_FILENAME, CUSTOM_APERTURE_LOG_FILENAME
 from astro_analytics_engine import AstroAnalyticsEngine
-# from user_profile import UserProfile
-# from astro_llm_tools import AstroLLMTools
-# from astro_streamlit_ui import AstroStreamlitUI
+from astro_streamlit_ui import run_streamlit_ui
 
 def main():
     """Main entry point for the app."""
-    # 1. Ingest Messier data
+    run_streamlit_ui()
+
+    # OPTIONAL: Print the results from the data parsing for logging. Might be helpful with grading.
+    # Just uncomment this next line, comment out the "run_streamlit_ui() line" and run this command: python main.py
+    #demonstrate_analytics_results()
+
+def demonstrate_analytics_results(): 
+    # 1. Ingest Messier data (console/CLI analytics demo)
     ingester = MessierDataIngester()
     csv_path = ingester.fetch_and_save()
     objects = ingester.parse_messier_objects_to_dict(csv_path)
@@ -39,15 +45,8 @@ def main():
     )
     print(f"Custom Aperture ({custom_aperture}mm): {len(filtered_df_custom)} objects found.")
 
-    # 3. Load or create user profile (to be implemented)
-    # 4. Launch the LLM class to be used by Streamlit UI (to be implemented)
-    # 5. Launch Streamlit UI (to be implemented)
 
-    # OPTIONAL: Print the results from the data parsing for logging.
-    # Just uncomment this next line:
-    #demonstrate_analytics_results()
 
-def demonstrate_analytics_results(): 
     import logging
     logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
     logger = logging.getLogger(__name__)
