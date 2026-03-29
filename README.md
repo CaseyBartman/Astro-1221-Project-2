@@ -3,7 +3,9 @@
 # Installation and Run Instructions:
 1. First, make sure the following dependencies are installed by running this command:
  
- $ pip install pandas numpy streamlit matplotlib
+ **$ pip install pandas numpy streamlit matplotlib litellm**
+
+If that doesn't work, install each dependency on it's own command, and if you don't have the anaconda distribution we used in class, you'll have to **$ pip install requests** as well
 
 2. Then, run this command to run the program
 
