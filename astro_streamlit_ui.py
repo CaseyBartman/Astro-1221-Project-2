@@ -1,14 +1,31 @@
-"""
-Provides:
-    - Sidebar for user profile settings (aperture, location, experience, season)
-    - Polar sky chart (Matplotlib polar plot of Messier objects by RA/Dec)
-    - Scatter finder chart (RA vs Magnitude)
-    - Filterable data table of Messier objects
-    - Object detail cards with full stats
-    - Observation log to track observed objects with dates and notes
-    - Favorites management
-    - Chat interface placeholder (for LLM tools integration)
-"""
+##
+##ASTROSTREAMLITUI
+# She's very long. The code looks a lot more menacing than it actually is. It certainly would not have been this long if we had decided to stick to one or two main tabs of the streamlit
+# I thought it would have been useful to see the information in different formats, especially if the project is supposed to be a tour guide, it needs to have all of the bells and whistles
+# It is broken up by the individual tabs, as you scroll through it you will see code for each tab in streamlit show up in the order it appears in the app
+# Depending on the contents ont the tab, the code is anywhere from a couple hundred lines to a few dozen
+
+# What you will see:
+#  - data loading 
+#  - profile set up
+#  - error handling 
+#  - sidebar visulization - seen in streamlit
+#  - sky chart tab - seen in streamlit
+#  - finder chart tab - seen in streamlit
+#  - object details - seen in streamlit
+#  - catalog explorer - seen in streamlit
+#  - observation log - seen in streamlit
+#  - classifying favorites 
+#  - observation tour - seen in streamlit
+#  - observing assiant - seen in streamlit
+#  - astrostreamlitui class
+
+## everything with a seen in streamlit next to shows up in our app, anything that does not is background work to help the app run. Most of this code is the bells and whistles of each tab to make it look a little fancy
+## there any many methods that were used for this app so I will explain the code tab by tab
+## one thing that I thought was super cool was running the code and having the pop up side by side with the terminal for the code
+## every time I made a change in the app, you could see the terminal adding new info and updating in real time. It's not super profound but I thought it was neat 
+
+
 import streamlit as st
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
@@ -23,6 +40,9 @@ from user_profile import UserProfile, VALID_EXPERIENCE_LEVELS, VALID_SEASONS
 from constants import DEFAULT_APERTURE_MM, SEASON_RA
 from astro_llm_tools import AstroLLMTools
  
+## This is the driver behind the streamlit code! All of our other files help support this massive chunk of code
+## we will go through the chunks piece by piece explaining why they are there and what they do 
+
 # ──────────────────────────────────────────────
 # Constants
 # ──────────────────────────────────────────────
@@ -36,14 +56,16 @@ TYPE_COLORS = {
     "Other": "#888780",
 }
  
- 
+ ## The code creates a JSON file when the user logs their first observation! Its where we save observed objects
+ ## And pretty simply, we categorized the different types with a color to see better
+
 # ──────────────────────────────────────────────
 # Data Loading (cached so it only runs once)
 # ──────────────────────────────────────────────
 
 @st.cache_data
 def load_messier_data():
-    """Download, parse, and clean the Messier catalog. Cached across reruns."""
+
     ingester = MessierDataIngester()
     csv_path = ingester.fetch_and_save()
     objects = ingester.parse_messier_objects_to_dict(csv_path)
@@ -51,9 +73,13 @@ def load_messier_data():
     analytics.clean_data()
     return analytics
  
+ ## This function pulls from files messier_data_ingester.py and astro_analytics_engine.py  
+ ## This creates an ingester, it downlaods the Messier catalog form the internet and parses it into one list of dictionaries 
+ ##It then runs these dictionaries through a Pandas DataFrame and cleans it! Turns certain values into others that the code can better use
+ ## the st.cache data functions tells streamlit to only run this code once it wont redownload the catalog everytime
  
 def get_user_profile():
-    """Load or initialize user profile in session state."""
+
     if "profile" not in st.session_state:
         st.session_state.profile = UserProfile()
     return st.session_state.profile
@@ -61,13 +87,21 @@ def get_user_profile():
 def get_llm_tools():
     return AstroLLMTools()
 astro_ai = get_llm_tools()
+
+## The user profile funtion pulls from the userprofile.py, it uses the certain charactersic like name, season preference, etc in the file to complete the profile
+## if there is not a profile in the "session" or rather the open tab, it will create a new slate user profile. If one already exists then it will use that one (so if you already run the code and saved your profile it would still be there)
+## Everytime anything happens in the streamlit the entire code gets rerun, without this funtion any changes made would lose all of the progress
+## using the st.cache resources we can keep the profile from moving when changes are made
+
+##The get llm tools function pulls from the file astro llm tools 
+## In that code there is an AstroLLMTools fucntion which we are recalling in this code to create the get observing story and generate observing plan function in streamlit
  
 # ──────────────────────────────────────────────
 # Observation Log — Persistence
 # ──────────────────────────────────────────────
  
 def load_observation_log():
-    """Load the observation log from disk into session state."""
+
     if "obs_log" not in st.session_state:
         if os.path.exists(OBSERVATION_LOG_FILE):
             try:
@@ -81,20 +115,29 @@ def load_observation_log():
  
  
 def save_observation_log():
-    """Save the current observation log to disk."""
+
     try:
         with open(OBSERVATION_LOG_FILE, "w", encoding="utf-8") as f:
             json.dump(st.session_state.obs_log, f, indent=2)
     except IOError as e:
         st.error(f"Could not save observation log: {e}")
  
- 
+ ## Our load_obseravtion_log code checks if an observation log already exists, if one doesnt it tries to pull from observation_log.json
+ ## And if all else fails it will simply create a new log with an empty dictionary
+ ## Again this is just precaution that streamlit doesnt run the code again every time a change is made and lose all of the edits made in the app
+ ## st.cache and st.session state are similar commands: st.cache tells stremalit to only run the function once and save that result. st.session state tells it to keep the same variable and not rerun it but the user can change it
+ ## in short, cache = run once with no changes, session state = create one, update when needed 
+
+ ## The save_observation_log takes the current observation log from the session writes it to observation_log.json
+ ## This command is called every time a user logs, edits, or removes an observation
+ ## so like previosly mentioned, st.session_state makes sure its only created once but we change if needed (and this is where that change happens)
+
 # ──────────────────────────────────────────────
 # Sidebar — User Profile Settings
 # ──────────────────────────────────────────────
  
 def render_sidebar(profile, analytics):
-    """Display and manage user profile settings in the sidebar."""
+
     st.sidebar.title("Observer Profile")
  
     # Name
@@ -205,29 +248,34 @@ def render_sidebar(profile, analytics):
  
     return profile
  
- 
+ ## This fucntion pulls from quite a few files including user_profile, astro_analytics_engine, and constants
+ ## This is all code to edit the actual lay out of streamlit, the st. tells us that this is streamlit
+ ## We build the sidebar with inputs for name, location, aperture, experience level, and season
+ ## Each input update the profile_prefernces so it stays that way unless the user decided to reset data which is also seen the final block of code
+ ## all the other tabs in streamlit rely on the data saved in the profile so it is important the it doesnt change between clicks
+
 # ──────────────────────────────────────────────
 # Polar Sky Chart
 # ──────────────────────────────────────────────
  
 def display_polar_chart(analytics, profile):
-    """
-    Circular sky chart showing Messier objects plotted by Right Ascension
-    (angle) and Magnitude (radius). Mimics an all-sky view where brighter
-    objects are closer to the center.
-    """
+
     st.subheader("Sky Chart")
     st.caption(
         "A polar view of all Messier objects. Angle = Right Ascension, "
         "distance from center = magnitude (brighter objects are closer to center)."
     )
- 
+
+## this one is a little long so I will be cutting up the commentary, but this first bit of code is not necessary I just thought it would be nice to have a bried description of the tab
+## we pull from files astro_analytics_engine (get all objects, get visible in season and filter by aperture and brightness), user_profile (for its get prefernces command), and constants (for the season right acensions) again 
     aperture = profile.get_preference("aperture_mm") or DEFAULT_APERTURE_MM
     season = profile.get_preference("preferred_season") or "Spring"
     mag_col = analytics.columns['MAGNITUDE']
     name_col = analytics.columns['NAME']
     mag_limit = analytics.aperture_mag_limit(aperture)
  
+ ## we need to pull all the inputs that the user made in the profile into the sidebar so that we can create a more personalized sky map
+
     # Filter controls
     col1, col2, col3 = st.columns(3)
     with col1:
@@ -244,7 +292,8 @@ def display_polar_chart(analytics, profile):
         show_visible_only = st.checkbox(
             "Show only visible with my telescope", value=False, key="polar_visible"
         )
- 
+## This create the three controls at the top of the sky map, the only real difference in the code here is that we created checked boxes for 1 and 3 and a selecter for 2
+       
     df = analytics.get_all_objects().copy()
  
     if show_season_only:
@@ -267,6 +316,9 @@ def display_polar_chart(analytics, profile):
     if plot_df.empty:
         st.warning("No objects match the current filters.")
         return
+
+## if the controls we created eailer are clicked or change, this code will display what the controls are doing
+## so if show season only is clicked than the sky map will display only the part of sky you can see during that season
  
     # Convert RA hours (0-24) to radians (0 to 2*pi)
     theta = plot_df['RA_Decimal'].values * (2 * np.pi / 24)
@@ -309,6 +361,8 @@ def display_polar_chart(analytics, profile):
         "Telescope": "#7F77DD",
         "Challenging": "#D85A30",
     }
+
+## In short, we created a circular Matplotlib plot using polar projection, each object is a dot where the angle around the circle is the object's Right Ascension and the distance from the center is the mag
  
     def get_difficulty(mag_val):
         if mag_val <= 5.0:
@@ -334,6 +388,10 @@ def display_polar_chart(analytics, profile):
                 label=f"{diff} ({mask.sum()})",
                 edgecolors="white", linewidths=0.5, zorder=5,
             )
+
+## Inside of the display_polar_chart function we have a function that runs if the users chooses to view the skymap by the object's difficulty to see
+## It takes magnitudes and sets intervals for them and assigns the intervals to a certain difficulty 
+
     else:
         # Plot objects by type (original mode)
         for obj_type, color in TYPE_COLORS.items():
@@ -374,7 +432,8 @@ def display_polar_chart(analytics, profile):
             color="white",
             alpha=0.8,
         )
- 
+   
+
     # Configure polar axes
     ax.set_theta_zero_location("N")
     ax.set_theta_direction(-1)
@@ -410,16 +469,19 @@ def display_polar_chart(analytics, profile):
     col2.metric("Telescope Limit", f"mag {mag_limit:.1f}")
     col3.metric(f"{season} Season", f"{len(analytics.get_visible_in_season(season))} objects")
  
- 
-# ──────────────────────────────────────────────
+## Finally, this is just plotting a graph with all of the information we already told streamlit to take into account 
+
+# # ──────────────────────────────────────────────
 # Scatter Finder Chart
 # ──────────────────────────────────────────────
  
 def display_scatter_chart(analytics, profile):
-    """
-    Scatter plot of Messier objects: RA vs Magnitude.
-    Traditional finder chart view.
-    """
+ 
+## similar to our previous tab, the scatter finder chart pulls all of the same files since it is essentially the same data just organized in a different manner
+## Instead of a polar sky chart, this is the traditional rectangular plot that shows the Magnitude vs The RA
+## the lower values on the vertical axis show the brighter stars, and going along the horizontal axis shows the body's eastward angular distance
+## 1 hour is the same as 15 degrees of angular distances
+
     st.subheader("Finder Chart (RA vs Magnitude)")
  
     aperture = profile.get_preference("aperture_mm") or DEFAULT_APERTURE_MM
@@ -459,6 +521,10 @@ def display_scatter_chart(analytics, profile):
         st.warning("No objects match the current filters.")
         return
  
+## It reads the user's aperture and season from the profile then it grabs all 110 objects. The checked boxes that were avalible in our previous tab are also here in this tab
+## you can filter the objects by season or by telescope visibilty. If your telescope has a large aperture then it is likely you will be able to see everything 
+## and the app tells you that there is nothing you cannot see and to maybe try a smaller aperture to see what the filter does
+
     fig, ax = plt.subplots(figsize=(10, 5))
     fig.patch.set_alpha(0.0)
     ax.set_facecolor("none")
@@ -514,13 +580,18 @@ def display_scatter_chart(analytics, profile):
         f"Dashed line = faintest visible with {aperture:.0f}mm aperture."
     )
  
+## then it creates a flat scatter plot using matplotlib. The x axis was defines as RA from 0 to 24hr and the Y axis is magnitude
+## each dot is again colored by their type using the same dictionary as the polar chart, the dot size relfects the object's apparent size (how big we view the object to be)
+## with the season shading section, depending on the user's preferred season, streamlit will highlight the part of the plot where object are seen during that seaosn
+## what we will see is that for some seasons, the shaded region is smaller or bigger. For example, summer has a larger shaded region since the Earth moves slower in its...
+## orbit around the Sun in its aphelion. And in winter, Earth moves much quicker when it's in perihelion. This is why the objects seem to move faster through the winter months
  
 # ──────────────────────────────────────────────
 # Object Detail Cards
 # ──────────────────────────────────────────────
  
 def display_object_details(analytics, profile):
-    """Show detailed info card for a selected Messier object."""
+
     st.subheader("Object Details")
  
     name_col = analytics.columns['NAME']
@@ -555,7 +626,11 @@ def display_object_details(analytics, profile):
             st.success("Observed!")
         else:
             st.info("Not yet observed")
- 
+
+## This chunk builds a dropdown for all 110 objects, when one is picked it grabs the object's entire row from the analytics engine's DataFrame
+## The observation log is checked to see if the object has been observed. Then it shows a header with the name, type, and it tells you it was observed or not yet observed
+
+
     # Stats grid
     col1, col2, col3, col4 = st.columns(4)
  
@@ -579,6 +654,9 @@ def display_object_details(analytics, profile):
     with col4:
         st.metric("Size Category", row.get('SizeCategory', 'Unknown'))
  
+## The four metrics are shown side by side (magnitude, best viewing month, apparent size, and size category)
+## each one of these metrics use st.metric to display a label since these 4 facts are likely the most practical numbers for someone hoping to catch a glimpse at one of these objects
+
     # Position and classification
     col1, col2, col3 = st.columns(3)
  
@@ -612,6 +690,10 @@ def display_object_details(analytics, profile):
                 st.text(f"Needs >{aperture:.0f}mm aperture")
         else:
             st.text("Unknown")
+
+## The first column shows RA and Declination, giving the user the sky coordinates needed to figure out where the object is in the sky
+## The second column shows the detailed object class, so it is a galaxy, it will specify if it is a Spiral Galaxy
+## Finally, the last column shows a visibility assessment, depending on the magnitude the code will run if elif statements to figure out which category the magnitude belongs in
  
     # Remarks
     remarks = row.get(remarks_col, "")
@@ -626,6 +708,9 @@ def display_object_details(analytics, profile):
             story = astro_ai.get_observing_story(row.to_dict())
             st.markdown("### 📖 Discovery Lore & Facts")
             st.write(story)
+
+## The AI story create a small clickable at the bottom on the page in order to generate a story about the object
+
     # Quick actions
     st.divider()
     col1, col2 = st.columns(2)
@@ -651,13 +736,15 @@ def display_object_details(analytics, profile):
                 save_observation_log()
                 st.rerun()
  
- 
+## Finally, we created two buttons at the side of whatever object the user picks, one can either add the oject to their favorites or remove the object from their favorites
+## and the other can mark that the object has been observed, allowing the user to keep track of the objects they've seen or haven't yet seen
+
 # ──────────────────────────────────────────────
 # Data Table with Filters
 # ──────────────────────────────────────────────
  
 def display_object_table(analytics, profile):
-    """Show a filterable table of Messier objects."""
+
     st.subheader("Catalog Browser")
  
     aperture = profile.get_preference("aperture_mm") or DEFAULT_APERTURE_MM
@@ -665,6 +752,10 @@ def display_object_table(analytics, profile):
     name_col = analytics.columns['NAME']
     type_col = analytics.columns['TYPE']
  
+## The user's aperture is loaded in from the prfile. The three _col are shortcuts to the actual column names in the CSV, it's just a little easier than typing 'Magnitude' for example!
+## We pull those anayltics from the constants file through the analytics engine. thank you casey
+## This is very similar to what we have been doing for each tab, just tweaked depending on what we need to import for this bit
+
     # Filter controls
     col1, col2, col3 = st.columns(3)
  
@@ -689,6 +780,11 @@ def display_object_table(analytics, profile):
             ["All"] + VALID_SEASONS,
         )
  
+## We created three side by side columns. The first col1 is a drop down of the object types
+## it reads from the NormalizedType column and sorts it alphabetically. So what we should see in streamlit is a dropdown of options of 'all, cluster, galaxy, nebula, other' 
+## The second column col2 creates a magnitude slider between 1 and 13, since the brightness and faintest appearant magnitudes are no greater than about 12.2 and less than 1
+## Finally, col3 similar to col2 will create another dropdown, pulling from the valid seasons. This will look like 'all, spring, summer, fall, winter' and you can choose whichever you wish!
+
     df = analytics.get_all_objects().copy()
  
     if selected_type != "All":
@@ -699,19 +795,25 @@ def display_object_table(analytics, profile):
     if selected_season != "All":
         seasonal = analytics.get_visible_in_season(selected_season)
         df = df[df.index.isin(seasonal.index)]
- 
-    # Add visibility info
+
+## The copy at the beginning is just so that the original DataFrame stays unchanged when filters are run over the different types
+## The filters run one at a time, if a type is a selected (if we chose galaxies) then it only keep the rpw in NormalizedType that matches galaxies
+## After that filter, it will run with the next column, checking what the max magnitude was in the slider. Depending on that slider, it will remove any of the data from the chart that is fainter
+## And if a season if selected it will check which season was clicked then check the objects from the analytics engine and keep only the objects that match the selected season
+   
     mag_limit = analytics.aperture_mag_limit(aperture)
     df['Visible'] = df[mag_col].apply(
         lambda m: "Yes" if m <= mag_limit else "No"
     )
- 
-    # Add observed status
+
     obs_log = load_observation_log()
     df['Observed'] = df[name_col].apply(
         lambda n: "Yes" if n in obs_log else ""
     )
- 
+## mag_limit calculates the faintest magnitude that the user's aperture would be able to observe 
+## Depending on that magnitude limit, if the magnitide is within that limit it writes 'yes' and if not it will write 'no'
+## this is the exact same pattern for the observed section, it's checking if the object's names exist in the observaion log dict 
+
     display_cols = [
         name_col, type_col, mag_col,
         'NormalizedType', 'BestViewingMonth',
@@ -731,13 +833,17 @@ def display_object_table(analytics, profile):
         f"(limiting mag {mag_limit:.1f})."
     )
  
- 
+## This is the final thing that builds off the code we wrote before in this section. It will display the name, the type of object, magnitude, and then all of the strings listed after
+## It will look like a large data table with the display as the upper row with the each objects details in the correct columns
+## the second display_cols is a check which filters out any column name that doesn't exist in the DataFrame, just in case, if someone were to rename a column in the data the code pulls from
+## st.dataframe renders the interactive table and reset index simply means to start the row numbers at 0 instead of assigning the rows to be what they were in the DataFrame index
+
 # ──────────────────────────────────────────────
 # Observation Log
 # ──────────────────────────────────────────────
  
 def display_observation_log(analytics, profile):
-    """Track which Messier objects the user has observed, with dates and notes."""
+
     st.subheader("Observation Log")
  
     name_col = analytics.columns['NAME']
@@ -750,6 +856,9 @@ def display_observation_log(analytics, profile):
     progress = len(obs_log) / 110
     st.progress(progress, text=f"{len(obs_log)} of 110 Messier objects observed ({progress:.0%})")
  
+## I think that this is just a cute little detail, it takes the number of logged objects out of the total objects as a decimal which then becomes a percentage in the progress bar
+## I have always liked seeing my progress in a more physical form rather than just a number out of the total. Honestly, this and many of the small additions are me just wanting it to look more aesthetic and maybe others will enjoy it too
+
     # Add new observation
     st.markdown("#### Log a New Observation")
  
@@ -758,6 +867,9 @@ def display_observation_log(analytics, profile):
         n for n in analytics.df[name_col].dropna().unique()
         if n not in observed_names
     ])
+
+## We only want to show the unobserved objects in the drop down since its an observation log. It would be rather silly to want to log a new observation and need to scroll through stuff you've already seen
+## This gets the list stored of already observed objects and builds a list of anything that is not observed, we will use that list in our dropdown on the tab
  
     if unobserved:
         col1, col2 = st.columns(2)
@@ -786,17 +898,24 @@ def display_observation_log(analytics, profile):
             st.rerun()
     else:
         st.success("You've observed all 110 Messier objects! Congratulations!")
+
+## so if there are any unobserved objects left (if you have already logged all objects there will be the little saying at the end instead of the drop down) you will have a dropdown of unobserved objects and a calendar to choose the date of observation
+##col1 covers the object dropdown and col2 covers the date picker
+## There's also a little section under the two dropdowns for any notes at all, we put the examples for notes to be describing what the user sees but it could be the weather or even how it made you feel to see the object
+## And finally, if we get through all of that, there is a button to log your observation, which saves the date and your notes as well 
  
     # Display log
     if obs_log:
         st.markdown("#### Your Observations")
- 
-        # Sort by date (most recent first)
+
         sorted_log = sorted(
             obs_log.items(),
             key=lambda x: x[1].get("date", ""),
             reverse=True,
         )
+
+## If there are any observations already logged, you can see them under a section called 'Your Observations' with a dropdown of the object, date, and your notes
+## I feel like it's easier to have that there since we previously only told streamlit to display the objects NOT observed in the dropdown. So if you didnt know where to find your logged ones, its in there!
  
         for obj_name, entry in sorted_log:
             obj_row = analytics.df[analytics.df[name_col] == obj_name]
@@ -837,6 +956,12 @@ def display_observation_log(analytics, profile):
                             del obs_log[obj_name]
                             save_observation_log()
                             st.rerun()
+## This beefy thing of a loop loops through each observation. For each one, it looks up the object in the enelytics engine to get its type and mag
+## this loop builds off of the concept of the last block, expect now we're actually coding it here. This is the code behind making "Your Observations" work!
+## It creates a expander with the object name, type, mag, and date as the header and inside the expander you can see the notes you recorded. Or if there were no notes, then "no notes recorded"
+## I wanted to be able and go back to edit any notes if I so chose, so the lower part lets you edit the notes with a save button
+## And if you ever wanted to you could delete the entry, whether the user wanted to completely redo their observation and they don't like the object any more
+
     else:
         st.info(
             "No observations logged yet. Select an object above "
@@ -848,8 +973,12 @@ def display_observation_log(analytics, profile):
 # Favorites
 # ──────────────────────────────────────────────
  
+## there is an option in a couple of the tabs to add an object to your favorites. It creates a more personalized feel, and if you really really wanted to keep track of a couple object that you liked, then this is the app for you
+## I bet we could sell this idea
+## the favorites can be viewed under the Object Details Tab to the right, but you can add an object to your favorites through that same tab or through the observing tour
+
 def display_favorites(analytics, profile):
-    """Manage and display favorite Messier objects."""
+
     st.subheader("Favorites")
  
     name_col = analytics.columns['NAME']
@@ -888,7 +1017,12 @@ def display_favorites(analytics, profile):
                     st.rerun()
         else:
             st.info("No favorites yet!")
- 
+## col1 creates an add to favorites section and col2 creates a remove from favorites
+## under the object details tab you will see the favorites section, the left column has an "add" dropdown that only show objects that are not in the favories this is done by the [n for n in...]
+## when you click add it will save it to json and then rerun
+## col2 or the right column only appears if you already have favorites to remove. It shows a dropdown of the current favorites. If you click one, you can click a "remove" button to remove it
+## it runs the same as col1 in the way that it works 
+
     if favorites:
         fav_df = analytics.df[analytics.df[name_col].isin(favorites)]
         fav_display = [
@@ -903,19 +1037,26 @@ def display_favorites(analytics, profile):
             use_container_width=True,
         )
  
+## This is the magic of the favorites section happens
+## It first filters the 110 objects to rows of only objects that are in the favorites list
+## It renders the favorites table using the list of favorites previously checked 
  
 # ──────────────────────────────────────────────
 # Observing Tour — Equipment-Based Custom Tours
 # ──────────────────────────────────────────────
  
 def generate_observing_tip(row, mag_col, aperture, mag_limit):
-    """Generate a short data-driven observing tip for a Messier object."""
+
     mag = row.get(mag_col, None)
     obj_type = row.get('NormalizedType', 'Unknown')
     size_cat = row.get('SizeCategory', 'Unknown')
     name = row.get('Name', 'This object')
  
     tips = []
+
+## Our observing tour gives the user a few different objects to find in the sky and then mark down in the app
+## it would be rather cruel to give them a name and then nothing else, so there are a couple tips for them based on different conditions
+## tips creates a blank list that will be added to depending on the values of the object 
  
     # Brightness-based tip
     if mag and mag <= 3.0:
@@ -926,6 +1067,11 @@ def generate_observing_tip(row, mag_col, aperture, mag_limit):
         tips.append("Best with binoculars or a small scope.")
     elif mag and mag <= mag_limit:
         tips.append(f"Requires your telescope ({aperture:.0f}mm).")
+
+## first tip is dependent on the brightness of the object! 
+## this runs through a couple if statements to determine where the object's mag is
+## for example, if the object had a magnitude of about 5, the first statement is not true, 5 is not less than or equal to 3, so it goes to the next, and yes! 5 is less than or equal to 5
+## so streamlit will print a small hint about viewing the object
  
     # Size-based tip
     if size_cat == "Very Large":
@@ -934,7 +1080,10 @@ def generate_observing_tip(row, mag_col, aperture, mag_limit):
         tips.append("Large target — fits well in a wide-field eyepiece.")
     elif size_cat == "Small":
         tips.append("Compact — try higher magnification to see detail.")
- 
+
+## second tip is size dependent, just like the last block, expect this time we don't need if statements because there is not a range for size. At least not for us
+## we have only categorized very large, large and small. Depending  on the object was charcertized in the analytics engine it will print a hint
+
     # Type-based tip
     if obj_type == "Galaxy":
         tips.append("Look for a faint fuzzy glow. Averted vision helps.")
@@ -945,12 +1094,11 @@ def generate_observing_tip(row, mag_col, aperture, mag_limit):
  
     return " ".join(tips) if tips else "Point your telescope and enjoy the view!"
  
+## final tip is object dependent, this runs exactly like the size tip. Both are not ranges and only needs to check the data used previously
+## the last line puts all of the individual tips into one line, easier viewing
  
 def display_observing_tour(analytics, profile):
-    """
-    Generate a custom observing tour based on the user's equipment,
-    experience level, and preferred season. Pure data-driven — no LLM needed.
-    """
+
     st.subheader("Your Observing Tour")
  
     aperture = profile.get_preference("aperture_mm") or DEFAULT_APERTURE_MM
@@ -986,6 +1134,10 @@ def display_observing_tour(analytics, profile):
         mag_ceiling = mag_limit
         include_challenge = True
         challenge_ceiling = mag_limit
+
+## Based on the experience set in the profile, there are 3 tours avaliable to you
+## it goes from beginner, to intermediate, and if it's anything else its immediately advanced 
+## the tour size sets how many objects to include, mag ceiling is the faintest main target allowed, the lower level you are the lower mag your main target is
  
     # Get seasonal objects visible with this telescope
     seasonal_df = analytics.get_visible_in_season(season)
@@ -1001,6 +1153,9 @@ def display_observing_tour(analytics, profile):
         )
         return
  
+## This gets two dataframes, all objects visible in the selected season and all objects visible with user's telescope
+## the long line of tour_df makes sure to keep objects that belong to BOTH of these dataframes, if nothing is able to pass those filters for some reason it will print a warning
+
     # Split into difficulty tiers
     easy = tour_df[tour_df[mag_col] <= 5.0].sort_values(mag_col)
     moderate = tour_df[
@@ -1009,6 +1164,9 @@ def display_observing_tour(analytics, profile):
     challenging = tour_df[
         (tour_df[mag_col] > mag_ceiling) & (tour_df[mag_col] <= challenge_ceiling)
     ].sort_values(mag_col)
+
+## The filtered objects that come from our tour dataframe and then filtered further into difficulties 
+## easy is anything mag 5 or brighter, moderate is beteween 5, and the mag ceiling set prior, and challenging is between the ceiliing and challenge ceiling of before
  
     # Build the tour with a mix of difficulties
     if level == "Beginner":
@@ -1033,7 +1191,11 @@ def display_observing_tour(analytics, profile):
     tour_result = tour_df.loc[
         [i for i in tour_objects if i in tour_df.index]
     ].copy()
- 
+
+## Picks how many objects from each tier based on experience. Beginners get 3 easy, 4 mod, and 1 challenging ideally, we had some issues with it not fully loading all of them somtimes
+## I've tried to figure out why it won't perfectly match up sometimes, or why it won't display the easy targets sometimes. I am still trying, if it doesn't work later either, I couldn't figure it out
+## Int. has 2 easy, 7 mod, and 3 challenging! Adv. has 1 easy, 5 mod, and 10 challenging! It combines all of them up into one list 
+
     if tour_result.empty:
         st.warning("Could not generate a tour with the current settings.")
         return
@@ -1047,6 +1209,9 @@ def display_observing_tour(analytics, profile):
         progress,
         text=f"Tour progress: {len(observed_in_tour)} of {len(tour_result)} observed ({progress:.0%})"
     )
+
+## This checks which tour objects have already been observed by comparing names with the observation log keys
+## and again, I love a little percentage bar so I had to bring it back for the progress you make on your tour. It fills up by clicking observed on the object
  
     # Display the tour
     tour_num = 1
@@ -1073,6 +1238,10 @@ def display_observing_tour(analytics, profile):
             st.markdown(f"#### {tier_icon} {tier}")
             prev_tier = tier
  
+## The tour object is sent through the if statements which determines the difficulty tier based on its magnitude
+## the fun colors are included, easy is green, blue is main, and orange is challenging, it seems pretty obvious
+## the prev tier tracker makes sure the same heading isn't printed twice in a row
+
         # Object card
         observed_marker = " ✓ Observed" if is_observed else ""
         obj_type = row.get('NormalizedType', 'Unknown')
@@ -1117,6 +1286,11 @@ def display_observing_tour(analytics, profile):
                         profile.save_profile()
                         st.rerun()
  
+## this is a bit of a larger chunk. Each object gets a collapsible card with the header showing the name of the object, the type, the mag, its constellation and its checkmarked if its observed
+## inside of the card in the left column (col1), we get the observing tip from a little bit ago, best viewing month, size
+## in the right column (col2) we have buttons for 'mark observed' or a green 'observed' note if you've already seen it!
+## like previously mentioned, we have a button to add to favorites if you so choose
+
         tour_num += 1
  
     # Tour summary
@@ -1138,6 +1312,8 @@ def display_observing_tour(analytics, profile):
     elif types_in_tour >= 2:
         st.info("Good mix of object types in your tour.")
  
+## At the very bottom of this tab, we added a couple metrics for completeness sake
+## col1 prints how many objects there are in the tour, col2 prints how many the user has observed, col3 prints the remianing objects, and col4 describes the mix of objects
  
 # ──────────────────────────────────────────────
 # Chat Interface (placeholder for LLM tools)
@@ -1157,17 +1333,14 @@ def chat_interface(profile):
             st.divider
             st.markdown("###our Custom Star Guide")
             st.info(plan) 
- 
+## andrew's work for the LLM tools 
  
 # ──────────────────────────────────────────────
 # AstroStreamlitUI Class and Entrypoint
 # ──────────────────────────────────────────────
 
 class AstroStreamlitUI:
-    """
-    Streamlit UI wrapper for the Messier Object Tourist Guide app.
-    Call run() to launch the UI in a Streamlit context.
-    """
+
     def __init__(self):
         pass
 
@@ -1201,8 +1374,8 @@ class AstroStreamlitUI:
             "Sky Chart",
             "Finder Chart",
             "Object Details",
-            "Catalog Explorer",
-            "Observing Tour",
+            "Catalog Browser",
+            "Your Observing Tour",
             "Observation Log",
             "Observing Assistant",
         ])
@@ -1274,8 +1447,14 @@ class AstroStreamlitUI:
         with tab7:
             chat_interface(profile)
 
+## most all of this is either visualizing and putting the pieces together for the app
+## The profile sidebar is rendered, along with adding titles are the app, the tabs, and i thought it would have been nice to add little descriptors for each tab and breifly what it does
 
 # Entrypoint function for main.py
 def run_streamlit_ui():
     ui = AstroStreamlitUI()
     ui.run()
+
+## i can't believe we got this far! Last thing I promise
+## this allows for all of this code to be wrapped up into one call function in main.py
+## and now you have too created the app. 
