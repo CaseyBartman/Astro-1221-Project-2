@@ -1,23 +1,4 @@
 """
-AstroStreamlitUI
-----------------
-Streamlit-based user interface for the Messier Object Tourist Guide app.
-
-Classes:
-    AstroStreamlitUI
-
-Methods:
-    render_sidebar(user_profile):
-        # Display user profile settings in sidebar
-        pass
-    display_star_chart(analytics_engine):
-        # Plot Messier objects using matplotlib
-        pass
-    chat_interface(llm_tools):
-        # Textbox for user to interact with LLM tools
-        pass
-
- 
 Provides:
     - Sidebar for user profile settings (aperture, location, experience, season)
     - Polar sky chart (Matplotlib polar plot of Messier objects by RA/Dec)

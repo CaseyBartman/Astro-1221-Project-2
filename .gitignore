@@ -17,6 +17,7 @@ env/
 *log.txt
 *aperture.txt
 .env
+.ipynb_checkpoints/
 
 # Streamlit specific ignores
 .streamlit/secrets.toml

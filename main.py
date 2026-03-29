@@ -2,7 +2,6 @@
 Entry point for the Messier Object Tourist Guide app.
 """
 
-
 from messier_data_ingester import MessierDataIngester
 from constants import CSV_FILENAME, LOG_FILENAME, DEFAULT_APERTURE_MM, DEFAULT_APERTURE_LOG_FILENAME, CUSTOM_APERTURE_LOG_FILENAME
 from astro_analytics_engine import AstroAnalyticsEngine
@@ -187,37 +186,6 @@ def demonstrate_analytics_results():
 
     print(f"Bright Object Count: {len(bright)}")
     print(bright[[analytics.columns['NAME'], analytics.columns['MAGNITUDE']]].head(5))
-
-    # Requirement: COMBINED REAL QUERY
-    print("\n[REQ] Combined Query: Large Galaxies Visible in Summer with Telescope")
-
-    # Step 1: galaxies
-    result = analytics.get_objects_by_type("Galaxy")
-
-    # Step 2: visible in summer
-    summer = analytics.get_visible_in_season("Summer")
-    result = result[result.index.isin(summer.index)]
-
-    # Step 3: visible with telescope
-    visible = analytics.filter_by_aperture_and_brightness()
-    result = result[result.index.isin(visible.index)]
-
-    # Step 4: large objects only
-    result = result[result['SizeCategory'].isin(["Large", "Very Large"])]
-
-    print(f"Matching Objects: {len(result)}")
-
-    print(
-        result[
-            [
-                analytics.columns['NAME'],
-                analytics.columns['MAGNITUDE'],
-                'ApparentSizeAvg',
-                'SizeCategory',
-                'BestViewingMonth'
-            ]
-        ].head(10)
-    )
 
     logger.info("REQUIREMENTS DEMO COMPLETE")
 

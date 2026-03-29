@@ -1,30 +1,3 @@
-# ##
-# UserProfile
-# -----------
-# Manages user preferences and favorites for the observing companion app.
-# We want to set up a personalized touring experience for the user, so we need to store their preferences and favorites.
-# This sets up many of the components of the app, such as the sidebar, the polar sky chart, the scatter finder chart, the object detail cards, the observation log, and the favorites management.
-# It's relatively straightforward! This is really just setting up things that the monster of a code the Streamlit is.
-
-# Classes:
-#     UserProfile
- 
-# Methods:
-#     __init__(): 
-#     update_preferences(key, value): 
-#     save_profile(): 
-#     load_profile(): 
-#     get_preference(key): 
-#     add_favorite(messier_id): 
-#     remove_favorite(messier_id): 
-#     get_favorites(): 
-#     reset_to_defaults():
- 
-# Data Structures:
-#     - preferences: dict (e.g., {"aperture": 114, "location": "Columbus", ...})
-#     - favorites: list of Messier object IDs (e.g., ["M1", "M31", "M42"])
-# ##
- 
 import json
 import os
 import logging

@@ -10,7 +10,7 @@
  $ streamlit run main.py
 
 # Project Goal:
-To collect information about all the Messier objects, filter it, and, depending on the input of the aperture and other info of the user (observer), such as the season of the year, display information to present the messier objects and take them on a tour through the objects.
+To collect information about all the Messier objects, filter it, and, depending on the input of the aperture and other info of the user (observer), such as the season of the year, display information to present the messier objects and take them on a tour through the objects. There are custom tours you can see of the objects that are generated based on the info you provide (such as your limiting magniture, calculated via info such as your telescope arperture, etc.).  
 See requirements.txt for more information on class architecture and other file structure information.
 
 # Data Sources:
